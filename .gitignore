@@ -1,6 +1,10 @@
-.cache/
-
-build/
-
-imgui.ini
-compile_commands.json
+node_modules
+dist
+out
+.DS_Store
+.eslintcache
+*.log*
+.vscode
+.cache
+core/build
+build
