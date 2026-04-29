@@ -1,29 +1,18 @@
-import { Button } from "@renderer/components/ui/button"
-import { Label } from "@renderer/components/ui/label"
+import ConnectionScreen from "@renderer/components/ConnectionScreen"
+import MainWorkspace from "@renderer/components/MainWorkspace"
 import { useState } from "react"
 
 function App(): React.JSX.Element {
-  const [name, setName] = useState("")
-  const [version, setVersion] = useState("")
-  const [platform, setPlatform] = useState("")
-
-  const ipcHandle = async () => {
-    console.log("Getting app info from main process...")
-    const info = await window.getInfo.getInfo()
-    setName(info.name)
-    setVersion(info.version)
-    setPlatform(info.platform)
-  }
+  const [isConnected, setIsConnected] = useState(false)
 
   return (
-    <>
-      <div className="flex flex-col gap-2">
-        <Label>Name: {name}</Label>
-        <Label>Version: {version}</Label>
-        <Label>Platform: {platform}</Label>
-        <Button onClick={ipcHandle}>Get App Info from Main Process</Button>
-      </div>
-    </>
+    <div className="h-screen w-screen bg-background text-foreground font-sans overflow-hidden">
+      {isConnected ? (
+        <MainWorkspace onDisconnect={() => setIsConnected(false)} />
+      ) : (
+        <ConnectionScreen onConnect={() => setIsConnected(true)} />
+      )}
+    </div>
   )
 }
 
