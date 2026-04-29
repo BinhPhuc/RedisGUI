@@ -1,4 +1,5 @@
 import { useState } from "react"
+import Editor from "@monaco-editor/react"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./ui/resizable"
 import {
   Database,
@@ -20,6 +21,52 @@ interface MainWorkspaceProps {
 
 export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
   const [query, setQuery] = useState("Vào mục kết nối và gõ\n\nGET my_key")
+
+  const handleEditorWillMount = (monaco: any) => {
+    monaco.editor.defineTheme("solarized-light", {
+      base: "vs",
+      inherit: true,
+      rules: [
+        { background: "fdf6e3" },
+        { token: "comment", foreground: "93a1a1", fontStyle: "italic" },
+        { token: "string", foreground: "2aa198" },
+        { token: "keyword", foreground: "859900" },
+        { token: "number", foreground: "d33682" },
+        { token: "variable", foreground: "268bd2" },
+        { token: "type", foreground: "b58900" },
+      ],
+      colors: {
+        "editor.background": "#fdf6e3",
+        "editor.foreground": "#657b83",
+        "editorLineNumber.foreground": "#93a1a1",
+        "editorCursor.foreground": "#586e75",
+        "editor.selectionBackground": "#eee8d5",
+        "editor.inactiveSelectionBackground": "#eee8d5",
+      },
+    })
+
+    monaco.editor.defineTheme("solarized-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { background: "002b36" },
+        { token: "comment", foreground: "586e75", fontStyle: "italic" },
+        { token: "string", foreground: "2aa198" },
+        { token: "keyword", foreground: "859900" },
+        { token: "number", foreground: "d33682" },
+        { token: "variable", foreground: "268bd2" },
+        { token: "type", foreground: "b58900" },
+      ],
+      colors: {
+        "editor.background": "#002b36",
+        "editor.foreground": "#839496",
+        "editorLineNumber.foreground": "#586e75",
+        "editorCursor.foreground": "#839496",
+        "editor.selectionBackground": "#073642",
+        "editor.inactiveSelectionBackground": "#073642",
+      },
+    })
+  }
 
   return (
     <div className="h-full w-full flex flex-col bg-background overflow-hidden text-sm">
@@ -131,40 +178,29 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
 
           {/* Right Main Area */}
           <ResizablePanel defaultSize={80} className="flex flex-col bg-background">
-            {/* Editor Tabs (Beekeeper style absolute top) */}
-            <div className="flex h-10 w-full shrink-0 border-b border-border bg-card px-2 gap-1 items-end overflow-hidden pt-2">
-              <div className="bg-background border-t border-x border-border rounded-t-md px-4 py-1.5 text-sm font-semibold flex items-center gap-2 text-foreground h-full relative top-px">
-                <Code2 className="w-4 h-4 text-[var(--chart-5)]" />
-                <span>query_editor</span>
-                <button className="hover:bg-muted rounded p-0.5 ml-2 text-muted-foreground">
-                  <span className="text-[10px]">✕</span>
-                </button>
-              </div>
-              <div className="px-4 py-1.5 text-sm flex items-center gap-2 text-muted-foreground hover:bg-muted/50 rounded-t-md cursor-pointer border-b border-transparent h-full relative top-px">
-                <Code2 className="w-4 h-4" />
-                <span>users_db [all]</span>
-              </div>
-              <button className="ml-1 p-1 hover:bg-muted rounded text-muted-foreground mb-1">
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-
             <ResizablePanelGroup direction="vertical" className="flex-1">
               {/* Top Panel: Query Editor */}
               <ResizablePanel defaultSize={50} minSize={20} className="flex flex-col relative z-0">
                 {/* Editor Surface */}
                 <div className="flex-1 p-0 relative flex bg-background">
-                  {/* Line numbers */}
-                  <div className="w-10 bg-background border-r border-border shrink-0 flex flex-col items-end pt-4 pr-2 font-mono text-muted-foreground text-xs select-none pointer-events-none opacity-50">
-                    <span>1</span>
-                    <span>2</span>
-                    <span>3</span>
-                  </div>
-                  <textarea
+                  <Editor
+                    height="100%"
+                    defaultLanguage="redis"
+                    language="redis"
+                    theme="solarized-light"
+                    beforeMount={handleEditorWillMount}
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="flex-1 bg-transparent text-foreground font-mono text-[13px] leading-relaxed p-4 focus:outline-none resize-none"
-                    spellCheck="false"
+                    onChange={(value) => setQuery(value || "")}
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 13,
+                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+                      padding: { top: 16 },
+                      scrollBeyondLastLine: false,
+                      wordWrap: "on",
+                      lineNumbersMinChars: 3,
+                    }}
+                    className="flex-1"
                   />
 
                   {/* Floating Buttons Bottom Right inside Editor */}
