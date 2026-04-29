@@ -1,33 +1,28 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import { Button } from "@renderer/components/ui/button"
+import { Label } from "@renderer/components/ui/label"
+import { useState } from "react"
 
 function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+  const [name, setName] = useState("")
+  const [version, setVersion] = useState("")
+  const [platform, setPlatform] = useState("")
+
+  const ipcHandle = async () => {
+    console.log("Getting app info from main process...")
+    const info = await window.getInfo.getInfo()
+    setName(info.name)
+    setVersion(info.version)
+    setPlatform(info.platform)
+  }
 
   return (
     <>
-      <img alt="logo" className="logo" src={electronLogo} />
-      <div className="creator">Powered by electron-vite</div>
-      <div className="text">
-        Build an Electron app with <span className="react">React</span>
-        &nbsp;and <span className="ts">TypeScript</span>
+      <div className="flex flex-col gap-2">
+        <Label>Name: {name}</Label>
+        <Label>Version: {version}</Label>
+        <Label>Platform: {platform}</Label>
+        <Button onClick={ipcHandle}>Get App Info from Main Process</Button>
       </div>
-      <p className="tip">
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className="actions">
-        <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action text-green-500">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
-            Send IPC
-          </a>
-        </div>
-      </div>
-      <Versions></Versions>
     </>
   )
 }
