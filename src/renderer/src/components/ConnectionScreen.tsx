@@ -21,6 +21,7 @@ export default function ConnectionScreen({ setIsConnected }: ConnectionScreenPro
       host,
       port
     })
+    console.log("Reponse from ui process:", response)
     if (response.ok) {
       setIsConnected(true)
     }
