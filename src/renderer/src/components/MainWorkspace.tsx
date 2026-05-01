@@ -8,7 +8,6 @@ import {
   Star,
   History,
   Code2,
-  Plus,
   ArrowDownToLine,
   Clock,
   ChevronDown,
@@ -33,7 +32,7 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
         { token: "keyword", foreground: "859900" },
         { token: "number", foreground: "d33682" },
         { token: "variable", foreground: "268bd2" },
-        { token: "type", foreground: "b58900" },
+        { token: "type", foreground: "b58900" }
       ],
       colors: {
         "editor.background": "#fdf6e3",
@@ -41,8 +40,8 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
         "editorLineNumber.foreground": "#93a1a1",
         "editorCursor.foreground": "#586e75",
         "editor.selectionBackground": "#eee8d5",
-        "editor.inactiveSelectionBackground": "#eee8d5",
-      },
+        "editor.inactiveSelectionBackground": "#eee8d5"
+      }
     })
 
     monaco.editor.defineTheme("solarized-dark", {
@@ -55,7 +54,7 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
         { token: "keyword", foreground: "859900" },
         { token: "number", foreground: "d33682" },
         { token: "variable", foreground: "268bd2" },
-        { token: "type", foreground: "b58900" },
+        { token: "type", foreground: "b58900" }
       ],
       colors: {
         "editor.background": "#002b36",
@@ -63,8 +62,8 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
         "editorLineNumber.foreground": "#586e75",
         "editorCursor.foreground": "#839496",
         "editor.selectionBackground": "#073642",
-        "editor.inactiveSelectionBackground": "#073642",
-      },
+        "editor.inactiveSelectionBackground": "#073642"
+      }
     })
   }
 
@@ -130,14 +129,14 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between hover:bg-muted py-1.5 px-2 rounded cursor-pointer group text-foreground">
                     <div className="flex items-center gap-2">
-                      <Code2 className="w-3.5 h-3.5 text-[var(--chart-1)]" />
+                      <Code2 className="w-3.5 h-3.5 text-chart-1" />
                       <span>user_sessions</span>
                     </div>
                     <Star className="w-3 h-3 text-muted-foreground group-hover:opacity-100 opacity-0" />
                   </div>
                   <div className="flex items-center justify-between hover:bg-muted py-1.5 px-2 rounded cursor-pointer group text-foreground">
                     <div className="flex items-center gap-2">
-                      <Code2 className="w-3.5 h-3.5 text-[var(--chart-1)]" />
+                      <Code2 className="w-3.5 h-3.5 text-chart-1" />
                       <span>product_cache</span>
                     </div>
                     <Star className="w-3 h-3 text-muted-foreground group-hover:opacity-100 opacity-0" />
@@ -162,7 +161,7 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
                       key={key}
                       className="flex items-center gap-2 hover:bg-muted py-1.5 px-2 rounded cursor-pointer text-foreground"
                     >
-                      <Code2 className="w-3.5 h-3.5 text-[var(--chart-4)]" />
+                      <Code2 className="w-3.5 h-3.5 text-chart-4" />
                       <span>{key}</span>
                     </div>
                   ))}
@@ -194,11 +193,12 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
                     options={{
                       minimap: { enabled: false },
                       fontSize: 13,
-                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+                      fontFamily:
+                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
                       padding: { top: 16 },
                       scrollBeyondLastLine: false,
                       wordWrap: "on",
-                      lineNumbersMinChars: 3,
+                      lineNumbersMinChars: 3
                     }}
                     className="flex-1"
                   />
@@ -229,13 +229,11 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
                         <th className="px-4 py-2 border-r border-border w-16 text-center text-muted-foreground">
                           #
                         </th>
-                        <th className="px-4 py-2 border-r border-border w-48 text-[var(--chart-4)]">
+                        <th className="px-4 py-2 border-r border-border w-48 text-chart-4">
                           key_name
                         </th>
-                        <th className="px-4 py-2 border-r border-border w-24 text-[var(--chart-4)]">
-                          type
-                        </th>
-                        <th className="px-4 py-2 text-[var(--chart-4)]">value</th>
+                        <th className="px-4 py-2 border-r border-border w-24 text-chart-4">type</th>
+                        <th className="px-4 py-2 text-chart-4">value</th>
                       </tr>
                     </thead>
                     <tbody className="font-mono bg-background">
@@ -264,7 +262,9 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
                           set
                         </td>
                         <td className="px-4 py-2 text-muted-foreground truncate max-w-xs">
-                          <span className="text-foreground">["feature_x", "feature_y"]</span>
+                          <span className="text-foreground">
+                            [&quot;feature_x&quot;, &quot;feature_y&quot;]
+                          </span>
                         </td>
                       </tr>
                       <tr className="border-b border-border hover:bg-muted/30">
@@ -278,7 +278,9 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
                           list
                         </td>
                         <td className="px-4 py-2 text-muted-foreground truncate max-w-xs">
-                          <span className="text-foreground">["start", "running", "done"]</span>
+                          <span className="text-foreground">
+                            [&quot;start&quot;, &quot;running&quot;, &quot;done&quot;]
+                          </span>
                         </td>
                       </tr>
                     </tbody>
