@@ -1,34 +1,88 @@
-# redisgui
+# RedisGUI
 
-An Electron application with React and TypeScript
+RedisGUI is an Electron desktop application that helps users write and interact with Redis queries. The desktop interface is built with Electron, React, and TypeScript, while the Redis bridge core is written in C++.
 
-## Recommended IDE Setup
+## How It Works
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- The Electron app provides the desktop UI and IPC layer.
+- The C++ core runs as a child process inside the Electron app.
+- Electron sends query and connection requests to the C++ core.
+- The C++ core communicates with Redis through a socket connection and sends responses back to the Electron side.
 
-## Project Setup
+## Development Quick Start
 
-### Install
+### Electron App
+
+#### Prerequisites
+
+- Node.js and npm. Install from the official download page: [Node.js Downloads](https://nodejs.org/en/download).
+- On Linux or macOS, you can also install Node.js with `nvm`: [nvm installation guide](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```bash
-$ npm install
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+nvm install 22
+nvm use 22
 ```
 
-### Development
+Install JavaScript dependencies from the project root:
 
 ```bash
-$ npm run dev
+npm install
 ```
 
-### Build
+Start the Electron development server:
 
 ```bash
-# For windows
-$ npm run build:win
+npm run dev
+```
 
-# For macOS
-$ npm run build:mac
+Note: the Electron main process expects the native executable at `core/build/RedisGUI`, so build the C++ core first if it has not been compiled yet.
 
-# For Linux
-$ npm run build:linux
+### C++ Core
+
+#### Prerequisites
+
+- CMake 3.10 or newer. Download or install it from: [CMake Download](https://cmake.org/download/).
+- A C++17-compatible compiler.
+
+Example installation commands:
+
+```bash
+# Ubuntu / Debian
+sudo apt update
+sudo apt install -y build-essential cmake
+
+# Fedora
+sudo dnf install -y gcc-c++ make cmake
+```
+
+- `vcpkg` for native dependencies. Setup guide: [vcpkg Getting Started](https://learn.microsoft.com/vcpkg/get_started/get-started).
+
+The native core uses CMake and requires a C++17-compatible compiler. The project also uses `vcpkg` for native dependencies.
+
+Build the core from the `core` directory:
+
+```bash
+cd core
+./scripts/build.sh
+```
+
+Run the compiled executable directly:
+
+```bash
+cd core
+./scripts/run.sh
+```
+
+## Build
+
+```bash
+# Windows
+npm run build:win
+
+# macOS
+npm run build:mac
+
+# Linux
+npm run build:linux
 ```
