@@ -8,4 +8,5 @@ out
 .cache
 core/build
 core/vcpkg_installed
+core/CMakeUserPresets.json
 build
