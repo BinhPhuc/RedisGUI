@@ -1,6 +1,5 @@
 #include "enum/request_type_enum.hpp"
 #include "socket/redis_connection.hpp"
-#include "util/format_response.hpp"
 #include <fmt/base.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -33,8 +32,6 @@ int main() {
       RedisConnection redis_conn(host, port);
       sockfd = redis_conn.make_connection();
     }
-
-    FormatResponse::ok("OK");
 
     std::cout << std::flush;
   }

@@ -16,7 +16,6 @@ RedisConnection::RedisConnection(const std::string &host,
 
 RedisConnection::~RedisConnection() {
   spdlog::info("RedisConnection to {}:{} destroyed", m_host, m_port);
-  fmt::print("RedisConnection to {}:{} destroyed\n", m_host, m_port);
 }
 
 int RedisConnection::make_connection() {
@@ -27,7 +26,6 @@ int RedisConnection::make_connection() {
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
-  hints.ai_protocol = 0;
 
   if (getaddrinfo(m_host.c_str(), m_port.c_str(), &hints, &res) != 0) {
     spdlog::error("Failed to resolve address for {}:{}", m_host, m_port);
@@ -37,6 +35,7 @@ int RedisConnection::make_connection() {
 
   for (rp = res; rp != nullptr; rp = rp->ai_next) {
     sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+
     if (sockfd == -1) {
       continue;
     }
@@ -53,6 +52,7 @@ int RedisConnection::make_connection() {
   if (rp == nullptr) {
     spdlog::error("Failed to connect to {}:{}", m_host, m_port);
     FormatResponse::error("Failed to connect to server");
+    return -1;
   }
 
   spdlog::info("Successfully connected to {}:{}", m_host, m_port);
