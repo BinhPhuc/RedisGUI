@@ -8,10 +8,6 @@ out
 .cache
 build
 
-.package-lock.json
-yarn.lock
-.pnpm-lock.yaml
-
 core/build
 core/vcpkg_installed
 core/CMakeUserPresets.json
