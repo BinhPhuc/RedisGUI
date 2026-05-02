@@ -1,25 +1,44 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Editor from "@monaco-editor/react"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./ui/resizable"
-import {
-  Database,
-  Search,
-  Server,
-  Star,
-  History,
-  Code2,
-  ArrowDownToLine,
-  Clock,
-  ChevronDown,
-  Menu
-} from "lucide-react"
+import { Search, Star, Code2, ChevronDown, LogOut } from "lucide-react"
+import type { ConnectionInfo } from "../../../shared/connection"
+import { toast } from "react-toastify"
 
 interface MainWorkspaceProps {
   onDisconnect: () => void
+  connectionInfo: ConnectionInfo
 }
 
-export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
+export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWorkspaceProps) {
   const [query, setQuery] = useState("Vào mục kết nối và gõ\n\nGET my_key")
+  const [showDisconnectMenu, setShowDisconnectMenu] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  const displayName = connectionInfo.name || `${connectionInfo.host}:${connectionInfo.port}`
+
+  const handleDisconnect = async () => {
+    const response = await window.redis.disconnect()
+    console.log("Disconnect response:", response)
+    if (response.ok) {
+      toast.success(response.message ?? "Disconnected", { autoClose: 1500, type: "success" })
+      onDisconnect()
+    } else {
+      toast.error(response.message ?? "Failed to disconnect", { autoClose: 4000, type: "error" })
+    }
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowDisconnectMenu(false)
+      }
+    }
+    if (showDisconnectMenu) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [showDisconnectMenu])
 
   const handleEditorWillMount = (monaco: any) => {
     monaco.editor.defineTheme("solarized-light", {
@@ -71,28 +90,6 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
     <div className="h-full w-full flex flex-col bg-background overflow-hidden text-sm">
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Activity Bar (Thin leftmost) */}
-        <div className="w-14 bg-card flex flex-col items-center py-4 gap-6 shrink-0 border-r border-border z-10 shadow-sm relative">
-          <div className="cursor-pointer text-muted-foreground hover:text-foreground">
-            <Menu className="w-5 h-5" />
-          </div>
-          <div className="cursor-pointer text-foreground bg-muted p-2 rounded-lg">
-            <Server className="w-5 h-5" />
-          </div>
-          <div className="cursor-pointer text-muted-foreground hover:text-foreground">
-            <Star className="w-5 h-5" />
-          </div>
-          <div className="cursor-pointer text-muted-foreground hover:text-foreground">
-            <History className="w-5 h-5" />
-          </div>
-          <div
-            className="mt-auto cursor-pointer text-muted-foreground hover:text-foreground"
-            onClick={onDisconnect}
-          >
-            <Database className="w-5 h-5" />
-          </div>
-        </div>
-
         <ResizablePanelGroup direction="horizontal" className="h-full items-stretch">
           {/* Inner Sidebar: Entities Navigation */}
           <ResizablePanel
@@ -102,9 +99,12 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
             className="flex flex-col bg-muted/20"
           >
             {/* Top Connection Name Selector */}
-            <div className="p-3 border-b border-border flex items-center justify-between cursor-pointer font-bold text-foreground hover:bg-muted/50 transition-colors">
-              <span>Local Redis</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            <div className="p-3 border-b border-border flex flex-col font-bold">
+              <span>{connectionInfo.name}</span>
+              <span>
+                {connectionInfo.host}:{connectionInfo.port}
+              </span>
+              {/* <ChevronDown className="w-4 h-4 text-muted-foreground" /> */}
             </div>
 
             {/* Filter */}
@@ -292,30 +292,32 @@ export default function MainWorkspace({ onDisconnect }: MainWorkspaceProps) {
         </ResizablePanelGroup>
       </div>
 
-      {/* Status Bar (Cyan/Blue Theme like Beekeeper's bottom status) */}
-      <div className="h-8 bg-[#06b6d4] text-black border-t border-[#0891b2] shrink-0 flex justify-between items-center px-3 text-[11px] font-bold font-sans">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 uppercase tracking-wide">
-            <span className="bg-black/20 px-1.5 py-0.5 rounded shadow-sm text-cyan-50">
-              ✓ [DEV] LOCAL REDIS
-            </span>
-          </div>
-          <span className="opacity-75">redis 7.2</span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex bg-black/10 rounded overflow-hidden">
-            <span className="px-2 py-0.5 border-r border-black/10">Result 1 ▼</span>
-          </div>
-          <div className="flex items-center gap-1 opacity-80">
-            <span className="opacity-50">#</span> 1000
-          </div>
-          <div className="flex items-center gap-1 opacity-80">
-            <Clock className="w-3 h-3 ml-2" /> 0.045 seconds
-          </div>
-          <button className="flex items-center gap-1.5 ml-4 bg-black/20 hover:bg-black/30 transition-colors px-2 py-0.5 rounded text-white shadow-sm">
-            Download <ArrowDownToLine className="w-3 h-3" />
+      {/* Status Bar */}
+      <div className="h-8 bg-[#eee8d5] text-[#657b83] border-t border-[#93a1a1]/30 shrink-0 flex items-center px-3 text-[11px] font-medium font-sans">
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setShowDisconnectMenu((v) => !v)}
+            className="flex items-center gap-1.5 bg-[#fdf6e3] hover:bg-[#fdf6e3]/80 border border-[#93a1a1]/30 px-2 py-0.5 rounded shadow-sm text-[#586e75] cursor-pointer transition-colors"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#859900]" />
+            {displayName}
+            <ChevronDown className="w-3 h-3 text-[#93a1a1]" />
           </button>
+
+          {showDisconnectMenu && (
+            <div className="absolute bottom-full left-0 mb-1 w-40 bg-[#fdf6e3] border border-[#93a1a1]/30 rounded-md shadow-lg p-1 z-50">
+              <button
+                onClick={() => {
+                  setShowDisconnectMenu(false)
+                  handleDisconnect()
+                }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[#dc322f] hover:bg-[#eee8d5] rounded cursor-pointer transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Disconnect
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

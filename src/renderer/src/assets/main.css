@@ -137,3 +137,40 @@ body,
     @apply font-sans;
   }
 }
+
+/* Custom toast styles - Solarized */
+.Toastify__toast {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.Toastify__toast--success {
+  border-left: 4px solid #859900 !important;
+}
+
+.Toastify__toast--error {
+  border-left: 4px solid var(--destructive) !important;
+}
+
+.Toastify__toast--info {
+  border-left: 4px solid #268bd2 !important;
+}
+
+.Toastify__progress-bar--success {
+  background: #859900 !important;
+}
+
+.Toastify__progress-bar--error {
+  background: var(--destructive) !important;
+}
+
+.Toastify__progress-bar--info {
+  background: #268bd2 !important;
+}
+
+.Toastify__close-button {
+  color: var(--muted-foreground) !important;
+}

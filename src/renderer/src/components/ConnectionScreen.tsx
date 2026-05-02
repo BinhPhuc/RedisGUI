@@ -1,8 +1,11 @@
 import { useState } from "react"
 import { Button } from "./ui/button"
+import { toast } from "react-toastify"
+import { Loader2 } from "lucide-react"
+import type { ConnectionInfo } from "../../../shared/connection"
 
 interface ConnectionScreenProps {
-  setIsConnected: React.Dispatch<React.SetStateAction<boolean>>
+  onConnected: (info: ConnectionInfo) => void
 }
 
 const mockConnections = [
@@ -10,21 +13,39 @@ const mockConnections = [
   { id: 2, name: "Staging Redis", host: "192.168.1.10", port: "6379" }
 ]
 
-export default function ConnectionScreen({ setIsConnected }: ConnectionScreenProps) {
+export default function ConnectionScreen({ onConnected }: ConnectionScreenProps) {
   const [selectedId, setSelectedId] = useState<number | null>(1)
+  const [name, setName] = useState("Localhost")
   const [host, setHost] = useState("127.0.0.1")
   const [port, setPort] = useState("6379")
+  const [isConnecting, setIsConnecting] = useState(false)
 
   const handleConnection = async () => {
-    console.log("Attempting to connect to Redis at", host, ":", port)
-    const response = await window.redis.connect({
-      host,
-      port
-    })
-    console.log("Reponse from ui process:", response)
+    if (isConnecting) return
+
+    setIsConnecting(true)
+    const toastId = toast.loading("Connecting...")
+
+    const response = await window.redis.connect({ host, port })
+
     if (response.ok) {
-      setIsConnected(true)
+      toast.update(toastId, {
+        render: response.message ?? "Connected successfully",
+        type: "success",
+        isLoading: false,
+        autoClose: 1500
+      })
+      onConnected({ name, host, port })
+    } else {
+      toast.update(toastId, {
+        render: response.message ?? "Connection failed",
+        type: "error",
+        isLoading: false,
+        autoClose: 4000
+      })
     }
+
+    setIsConnecting(false)
   }
 
   return (
@@ -69,7 +90,8 @@ export default function ConnectionScreen({ setIsConnected }: ConnectionScreenPro
             <input
               type="text"
               className="w-full bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-              defaultValue="Localhost"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
 
@@ -113,11 +135,18 @@ export default function ConnectionScreen({ setIsConnected }: ConnectionScreenPro
         </div>
 
         <div className="p-4 border-t border-border flex justify-end gap-3 bg-muted/20">
-          <Button variant="outline" className="px-6">
+          {/* <Button variant="outline" className="px-6" disabled={isConnecting}>
             Test
-          </Button>
-          <Button onClick={handleConnection} className="px-6">
-            Connect
+          </Button> */}
+          <Button onClick={handleConnection} className="px-6" disabled={isConnecting}>
+            {isConnecting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              "Connect"
+            )}
           </Button>
         </div>
       </div>

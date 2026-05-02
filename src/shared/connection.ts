@@ -4,6 +4,12 @@ export interface ConnectionPayload {
   // password?: string
 }
 
+export interface ConnectionInfo {
+  name: string
+  host: string
+  port: string
+}
+
 export interface ConnectionResult {
   ok: boolean
   message?: string
@@ -11,4 +17,5 @@ export interface ConnectionResult {
 
 export interface RedisAPI {
   connect: (connection: ConnectionPayload) => Promise<ConnectionResult>
+  disconnect: () => Promise<ConnectionResult>
 }

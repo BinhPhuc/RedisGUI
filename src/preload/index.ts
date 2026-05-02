@@ -6,7 +6,8 @@ import { IPC_CHANNELS } from "../shared/channels"
 // Custom APIs for renderer
 const api = {}
 const redisAPI: RedisAPI = {
-  connect: (connection) => ipcRenderer.invoke(IPC_CHANNELS.redisConnect, connection)
+  connect: (connection) => ipcRenderer.invoke(IPC_CHANNELS.redisConnect, connection),
+  disconnect: () => ipcRenderer.invoke(IPC_CHANNELS.redisDisconnect)
 }
 
 function exposeApi(name: string, value: unknown): void {
