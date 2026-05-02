@@ -1,7 +1,8 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron"
+import { app, shell, BrowserWindow } from "electron"
 import { join } from "path"
 import { electronApp, optimizer, is } from "@electron-toolkit/utils"
 import icon from "../../resources/icon.png?asset"
+import { registerRedisIpc } from "./redis.ipc"
 
 function createWindow(): void {
   // Create the browser window.
@@ -13,6 +14,7 @@ function createWindow(): void {
     ...(process.platform === "linux" ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
+      contextIsolation: true,
       sandbox: false
     }
   })
@@ -49,22 +51,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on("ping", () => console.log("pong"))
-  ipcMain.on("set-title", (event, title) => {
-    const window = BrowserWindow.fromWebContents(event.sender)
-    if (window) {
-      window.setTitle(title)
-    }
-  })
-  ipcMain.handle("get-info", () => {
-    return {
-      name: app.getName(),
-      version: app.getVersion(),
-      platform: process.platform
-    }
-  })
-
+  registerRedisIpc()
   createWindow()
 
   app.on("activate", function () {

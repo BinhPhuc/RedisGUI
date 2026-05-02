@@ -10,7 +10,7 @@ function App(): React.JSX.Element {
       {isConnected ? (
         <MainWorkspace onDisconnect={() => setIsConnected(false)} />
       ) : (
-        <ConnectionScreen onConnect={() => setIsConnected(true)} />
+        <ConnectionScreen setIsConnected={setIsConnected} />
       )}
     </div>
   )
