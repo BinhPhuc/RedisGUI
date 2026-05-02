@@ -12,14 +12,25 @@ using json = nlohmann::json;
 
 RedisConnection::RedisConnection(const std::string &host,
                                  const std::string &port)
-    : m_host(host), m_port(port) {}
+    : m_host(host), m_port(port), m_sockfd(-1) {}
 
 RedisConnection::~RedisConnection() {
   spdlog::info("RedisConnection to {}:{} destroyed", m_host, m_port);
+  stop();
+}
+
+void RedisConnection::stop() {
+  if (m_sockfd != -1) {
+    close(m_sockfd);
+    m_sockfd = -1;
+    spdlog::info("Connection to {}:{} closed", m_host, m_port);
+    FormatResponse::ok("Connection closed successfully");
+  } else {
+    spdlog::warn("No active connection to {}:{}", m_host, m_port);
+  }
 }
 
 int RedisConnection::make_connection() {
-  int sockfd;
   struct addrinfo hints;
   struct addrinfo *res, *rp;
 
@@ -34,17 +45,17 @@ int RedisConnection::make_connection() {
   }
 
   for (rp = res; rp != nullptr; rp = rp->ai_next) {
-    sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+    m_sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 
-    if (sockfd == -1) {
+    if (m_sockfd == -1) {
       continue;
     }
 
-    if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
+    if (connect(m_sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
       break;
     }
 
-    close(sockfd);
+    close(m_sockfd);
   }
 
   freeaddrinfo(res);
@@ -56,7 +67,7 @@ int RedisConnection::make_connection() {
   }
 
   spdlog::info("Successfully connected to {}:{}", m_host, m_port);
-  FormatResponse::ok("Successfully connected to server");
+  FormatResponse::ok("Connected!!!");
 
-  return sockfd;
+  return m_sockfd;
 }
