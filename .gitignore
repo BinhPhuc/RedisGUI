@@ -6,7 +6,9 @@ out
 *.log*
 .vscode
 .cache
+build
+
 core/build
 core/vcpkg_installed
 core/CMakeUserPresets.json
-build
+core/compile_commands.json

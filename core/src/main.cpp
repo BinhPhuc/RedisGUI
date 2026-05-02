@@ -17,6 +17,8 @@ int main() {
   std::string input_line;
   int sockfd = -1;
 
+  auto redis_conn = std::make_unique<RedisConnection>("", "");
+
   while (std::getline(std::cin, input_line)) {
     if (input_line.empty())
       continue;
@@ -25,12 +27,24 @@ int main() {
 
     std::string type = input_json["type"];
 
-    std::string host = input_json["payload"]["host"];
-    std::string port = input_json["payload"]["port"];
+    std::string host, port;
+
+    json payload = input_json["payload"];
+
+    if (payload != nullptr && type == RequestType(RequestTypeEnum::CONNECT)) {
+      host = payload["host"];
+      port = payload["port"];
+    }
 
     if (sockfd == -1 && type == RequestType(RequestTypeEnum::CONNECT)) {
-      RedisConnection redis_conn(host, port);
-      sockfd = redis_conn.make_connection();
+      auto connection = std::make_unique<RedisConnection>(host, port);
+      redis_conn = std::move(connection);
+      sockfd = redis_conn->make_connection();
+    }
+
+    if (sockfd != -1 && type == RequestType(RequestTypeEnum::DISCONNECT)) {
+      redis_conn->stop();
+      sockfd = -1;
     }
 
     std::cout << std::flush;
