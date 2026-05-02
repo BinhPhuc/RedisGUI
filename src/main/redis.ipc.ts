@@ -32,7 +32,7 @@ export function registerRedisIpc() {
       const onData = (data: Buffer) => {
         const response: ConnectionResult = JSON.parse(data.toString())
         resolve(response)
-        cppCore.stdout.off("data", onData) 
+        cppCore.stdout.off("data", onData)
       }
       cppCore.stdout.on("data", onData)
     })
