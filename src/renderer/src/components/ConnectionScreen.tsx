@@ -1,5 +1,10 @@
 import { useState } from "react"
 import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "./ui/card"
+import { Separator } from "./ui/separator"
+import { ScrollArea } from "./ui/scroll-area"
 import { toast } from "react-toastify"
 import { Loader2 } from "lucide-react"
 import type { ConnectionInfo } from "../../../shared/connection"
@@ -49,47 +54,56 @@ export default function ConnectionScreen({ onConnected }: ConnectionScreenProps)
   }
 
   return (
-    <div className="flex h-full w-full bg-background border border-border rounded-lg shadow-xl overflow-hidden m-auto max-w-5xl max-h-[80vh] mt-[10vh]">
+    <Card className="flex flex-row h-full w-full overflow-hidden m-auto max-w-5xl max-h-[80vh] mt-[10vh] p-0 gap-0 rounded-lg">
       {/* Left Sidebar: Connection History */}
-      <div className="w-1/3 bg-muted/50 border-r border-border flex flex-col">
-        <div className="p-4 border-b border-border font-semibold text-foreground">Connections</div>
-        <div className="flex-1 overflow-y-auto p-2">
-          {mockConnections.map((conn) => (
-            <button
-              key={conn.id}
-              onClick={() => setSelectedId(conn.id)}
-              className={`w-full text-left px-3 py-2 rounded-md mb-1 transition-colors ${
-                selectedId === conn.id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <div className="font-medium text-sm">{conn.name}</div>
-              <div className="text-xs opacity-70">
-                {conn.host}:{conn.port}
-              </div>
-            </button>
-          ))}
-        </div>
-        <div className="p-4 border-t border-border">
+      <div className="w-1/3 bg-muted/50 flex flex-col">
+        <CardHeader className="px-4 py-4 rounded-none">
+          <CardTitle className="text-base">Connections</CardTitle>
+        </CardHeader>
+        <ScrollArea className="flex-1">
+          <div className="p-2">
+            {mockConnections.map((conn) => (
+              <button
+                key={conn.id}
+                onClick={() => setSelectedId(conn.id)}
+                className={`w-full text-left px-3 py-2 rounded-md mb-1 transition-colors ${
+                  selectedId === conn.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <div className="font-medium text-sm">{conn.name}</div>
+                <div className="text-xs opacity-70">
+                  {conn.host}:{conn.port}
+                </div>
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
+        <div className="p-4">
           <Button variant="outline" className="w-full justify-center">
             + New Connection
           </Button>
         </div>
       </div>
 
+      <Separator orientation="vertical" className="bg-foreground/20" />
+
       {/* Right Column: Connection Form */}
       <div className="w-2/3 flex flex-col bg-card">
-        <div className="p-6 border-b border-border text-lg font-semibold text-foreground">
-          Connection Settings
-        </div>
+        <CardHeader className="px-6 py-6 rounded-none">
+          <CardTitle className="text-lg">Connection Settings</CardTitle>
+        </CardHeader>
 
-        <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+        <CardContent className="flex-1 p-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Name</label>
-            <input
+            <Label htmlFor="conn-name" className="text-muted-foreground">
+              Name
+            </Label>
+            <Input
+              id="conn-name"
               type="text"
-              className="w-full bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+              className="rounded-md border border-foreground/30"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -97,47 +111,56 @@ export default function ConnectionScreen({ onConnected }: ConnectionScreenProps)
 
           <div className="flex gap-4">
             <div className="space-y-2 flex-1">
-              <label className="text-sm font-medium text-muted-foreground">Host</label>
-              <input
+              <Label htmlFor="conn-host" className="text-muted-foreground">
+                Host
+              </Label>
+              <Input
+                id="conn-host"
                 type="text"
-                className="w-full bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className="rounded-md border border-foreground/30"
                 value={host}
                 onChange={(e) => setHost(e.target.value)}
               />
             </div>
             <div className="space-y-2 w-1/3">
-              <label className="text-sm font-medium text-muted-foreground">Port</label>
-              <input
+              <Label htmlFor="conn-port" className="text-muted-foreground">
+                Port
+              </Label>
+              <Input
+                id="conn-port"
                 type="text"
-                className="w-full bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className="rounded-md border border-foreground/30"
                 value={port}
                 onChange={(e) => setPort(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="space-y-2 flex-1">
-            <label className="text-sm font-medium text-muted-foreground">Username</label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="conn-username" className="text-muted-foreground">
+              Username
+            </Label>
+            <Input
+              id="conn-username"
               type="text"
-              className="w-full bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+              className="rounded-md border border-foreground/30"
               placeholder="default"
             />
           </div>
 
-          <div className="space-y-2 flex-1">
-            <label className="text-sm font-medium text-muted-foreground">Password</label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="conn-password" className="text-muted-foreground">
+              Password
+            </Label>
+            <Input
+              id="conn-password"
               type="password"
-              className="w-full bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+              className="rounded-md border border-foreground/30"
             />
           </div>
-        </div>
+        </CardContent>
 
-        <div className="p-4 border-t border-border flex justify-end gap-3 bg-muted/20">
-          {/* <Button variant="outline" className="px-6" disabled={isConnecting}>
-            Test
-          </Button> */}
+        <CardFooter className="p-4 flex justify-end gap-3 bg-muted/20">
           <Button onClick={handleConnection} className="px-6" disabled={isConnecting}>
             {isConnecting ? (
               <>
@@ -148,8 +171,8 @@ export default function ConnectionScreen({ onConnected }: ConnectionScreenProps)
               "Connect"
             )}
           </Button>
-        </div>
+        </CardFooter>
       </div>
-    </div>
+    </Card>
   )
 }

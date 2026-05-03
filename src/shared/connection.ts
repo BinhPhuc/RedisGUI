@@ -9,13 +9,3 @@ export interface ConnectionInfo {
   host: string
   port: string
 }
-
-export interface ConnectionResult {
-  ok: boolean
-  message?: string
-}
-
-export interface RedisAPI {
-  connect: (connection: ConnectionPayload) => Promise<ConnectionResult>
-  disconnect: () => Promise<ConnectionResult>
-}

@@ -1,6 +1,13 @@
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import Editor from "@monaco-editor/react"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./ui/resizable"
+import { Input } from "./ui/input"
+import { ScrollArea } from "./ui/scroll-area"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { Badge } from "./ui/badge"
+import { Separator } from "./ui/separator"
+import { Button } from "./ui/button"
 import { Search, Star, Code2, ChevronDown, LogOut } from "lucide-react"
 import type { ConnectionInfo } from "../../../shared/connection"
 import { toast } from "react-toastify"
@@ -11,9 +18,7 @@ interface MainWorkspaceProps {
 }
 
 export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWorkspaceProps) {
-  const [query, setQuery] = useState("Vào mục kết nối và gõ\n\nGET my_key")
-  const [showDisconnectMenu, setShowDisconnectMenu] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const [query, setQuery] = useState("")
 
   const displayName = connectionInfo.name || `${connectionInfo.host}:${connectionInfo.port}`
 
@@ -28,17 +33,23 @@ export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWork
     }
   }
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setShowDisconnectMenu(false)
-      }
+  const handleQueryExecute = async () => {
+    if (!query.trim()) {
+      toast.warning("Please enter a query to execute", { autoClose: 3000, type: "warning" })
+      return
     }
-    if (showDisconnectMenu) {
-      document.addEventListener("mousedown", handleClickOutside)
+    console.log(`Executing query: ${query}`)
+    const response = await window.redis.query(query)
+    console.log("Query response:", response)
+    if (response.ok) {
+      toast.success(response.message ?? "Query executed successfully", {
+        autoClose: 1500,
+        type: "success"
+      })
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [showDisconnectMenu])
+  }
+
+
 
   const handleEditorWillMount = (monaco: any) => {
     monaco.editor.defineTheme("solarized-light", {
@@ -99,28 +110,29 @@ export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWork
             className="flex flex-col bg-muted/20"
           >
             {/* Top Connection Name Selector */}
-            <div className="p-3 border-b border-border flex flex-col font-bold">
+            <div className="p-3 flex flex-col font-bold">
               <span>{connectionInfo.name}</span>
               <span>
                 {connectionInfo.host}:{connectionInfo.port}
               </span>
-              {/* <ChevronDown className="w-4 h-4 text-muted-foreground" /> */}
             </div>
+            <Separator />
 
             {/* Filter */}
             <div className="p-3 pb-1">
               <div className="relative">
-                <input
+                <Input
                   type="text"
                   placeholder="Filter"
-                  className="w-full bg-background border border-border rounded pl-2.5 pr-8 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary text-xs text-foreground placeholder:text-muted-foreground"
+                  className="rounded-md pl-2.5 pr-8 py-1.5 h-8 text-xs"
                 />
                 <Search className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
 
             {/* Tree Navigation */}
-            <div className="flex-1 overflow-y-auto p-2 space-y-4 select-none mt-2">
+            <ScrollArea className="flex-1 mt-2">
+              <div className="p-2 space-y-4 select-none">
               {/* Pinned Section */}
               <div>
                 <div className="px-2 text-[10px] font-bold text-muted-foreground tracking-wider mb-1 flex items-center gap-1">
@@ -167,7 +179,8 @@ export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWork
                   ))}
                 </div>
               </div>
-            </div>
+              </div>
+            </ScrollArea>
           </ResizablePanel>
 
           <ResizableHandle
@@ -204,13 +217,14 @@ export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWork
                   />
 
                   {/* Floating Buttons Bottom Right inside Editor */}
-                  <div className="absolute bottom-4 right-4 flex gap-2 shadow-lg">
-                    <button className="bg-card text-foreground border border-border px-3 py-1.5 rounded text-xs font-bold hover:bg-muted transition-colors">
-                      Save
-                    </button>
-                    <button className="bg-[#eab308] text-black px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 hover:bg-[#ca8a04] focus:ring focus:ring-yellow-300 transition-colors">
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-[#eab308] text-black text-xs font-bold hover:bg-[#ca8a04] focus:ring focus:ring-yellow-300"
+                      onClick={handleQueryExecute}
+                    >
                       Run <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </ResizablePanel>
@@ -222,70 +236,50 @@ export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWork
 
               {/* Bottom Panel: Table Results grid */}
               <ResizablePanel defaultSize={50} minSize={20} className="flex flex-col bg-card">
-                <div className="flex-1 overflow-auto">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="bg-card sticky top-0 z-10 font-bold text-foreground">
-                      <tr className="border-b-2 border-border shadow-sm">
-                        <th className="px-4 py-2 border-r border-border w-16 text-center text-muted-foreground">
-                          #
-                        </th>
-                        <th className="px-4 py-2 border-r border-border w-48 text-chart-4">
-                          key_name
-                        </th>
-                        <th className="px-4 py-2 border-r border-border w-24 text-chart-4">type</th>
-                        <th className="px-4 py-2 text-chart-4">value</th>
-                      </tr>
-                    </thead>
-                    <tbody className="font-mono bg-background">
-                      <tr className="border-b border-border hover:bg-muted/30">
-                        <td className="px-4 py-2 border-r border-border text-center text-muted-foreground">
-                          1
-                        </td>
-                        <td className="px-4 py-2 border-r border-border text-foreground font-semibold">
-                          user_sessions
-                        </td>
-                        <td className="px-4 py-2 border-r border-border text-muted-foreground">
-                          hash
-                        </td>
-                        <td className="px-4 py-2 text-muted-foreground truncate max-w-xs ">
-                          <span className="text-foreground">{"{ id: 1, token: 'abc' }"}</span>
-                        </td>
-                      </tr>
-                      <tr className="border-b border-border hover:bg-muted/30">
-                        <td className="px-4 py-2 border-r border-border text-center text-muted-foreground">
-                          2
-                        </td>
-                        <td className="px-4 py-2 border-r border-border text-foreground font-semibold">
-                          config_flags
-                        </td>
-                        <td className="px-4 py-2 border-r border-border text-muted-foreground">
-                          set
-                        </td>
-                        <td className="px-4 py-2 text-muted-foreground truncate max-w-xs">
-                          <span className="text-foreground">
-                            [&quot;feature_x&quot;, &quot;feature_y&quot;]
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="border-b border-border hover:bg-muted/30">
-                        <td className="px-4 py-2 border-r border-border text-center text-muted-foreground">
-                          3
-                        </td>
-                        <td className="px-4 py-2 border-r border-border text-foreground font-semibold">
-                          logs_today
-                        </td>
-                        <td className="px-4 py-2 border-r border-border text-muted-foreground">
-                          list
-                        </td>
-                        <td className="px-4 py-2 text-muted-foreground truncate max-w-xs">
-                          <span className="text-foreground">
-                            [&quot;start&quot;, &quot;running&quot;, &quot;done&quot;]
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <ScrollArea className="flex-1">
+                  <Table className="text-xs">
+                    <TableHeader className="bg-card sticky top-0 z-10">
+                      <TableRow className="border-b-2 border-border">
+                        <TableHead className="w-16 text-center text-muted-foreground">#</TableHead>
+                        <TableHead className="w-48 text-chart-4">key_name</TableHead>
+                        <TableHead className="w-24 text-chart-4">type</TableHead>
+                        <TableHead className="text-chart-4">value</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="font-mono bg-background">
+                      <TableRow>
+                        <TableCell className="text-center text-muted-foreground">1</TableCell>
+                        <TableCell className="text-foreground font-semibold">user_sessions</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px]">hash</Badge>
+                        </TableCell>
+                        <TableCell className="truncate max-w-xs text-foreground">
+                          {"{ id: 1, token: 'abc' }"}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="text-center text-muted-foreground">2</TableCell>
+                        <TableCell className="text-foreground font-semibold">config_flags</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px]">set</Badge>
+                        </TableCell>
+                        <TableCell className="truncate max-w-xs text-foreground">
+                          [&quot;feature_x&quot;, &quot;feature_y&quot;]
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="text-center text-muted-foreground">3</TableCell>
+                        <TableCell className="text-foreground font-semibold">logs_today</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px]">list</Badge>
+                        </TableCell>
+                        <TableCell className="truncate max-w-xs text-foreground">
+                          [&quot;start&quot;, &quot;running&quot;, &quot;done&quot;]
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
               </ResizablePanel>
             </ResizablePanelGroup>
           </ResizablePanel>
@@ -293,32 +287,22 @@ export default function MainWorkspace({ onDisconnect, connectionInfo }: MainWork
       </div>
 
       {/* Status Bar */}
-      <div className="h-8 bg-[#eee8d5] text-[#657b83] border-t border-[#93a1a1]/30 shrink-0 flex items-center px-3 text-[11px] font-medium font-sans">
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setShowDisconnectMenu((v) => !v)}
-            className="flex items-center gap-1.5 bg-[#fdf6e3] hover:bg-[#fdf6e3]/80 border border-[#93a1a1]/30 px-2 py-0.5 rounded shadow-sm text-[#586e75] cursor-pointer transition-colors"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#859900]" />
-            {displayName}
-            <ChevronDown className="w-3 h-3 text-[#93a1a1]" />
-          </button>
-
-          {showDisconnectMenu && (
-            <div className="absolute bottom-full left-0 mb-1 w-40 bg-[#fdf6e3] border border-[#93a1a1]/30 rounded-md shadow-lg p-1 z-50">
-              <button
-                onClick={() => {
-                  setShowDisconnectMenu(false)
-                  handleDisconnect()
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[#dc322f] hover:bg-[#eee8d5] rounded cursor-pointer transition-colors"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                Disconnect
-              </button>
-            </div>
-          )}
-        </div>
+      <div className="h-8 bg-muted border-t border-border shrink-0 flex items-center px-3 text-[11px] font-medium font-sans text-muted-foreground">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-1.5 bg-background hover:bg-background/80 border border-border px-2 py-0.5 rounded shadow-sm text-foreground cursor-pointer transition-colors">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
+              {displayName}
+              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-40">
+            <DropdownMenuItem variant="destructive" onClick={handleDisconnect}>
+              <LogOut className="w-3.5 h-3.5" />
+              Disconnect
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )

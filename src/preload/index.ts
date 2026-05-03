@@ -1,13 +1,14 @@
 import { contextBridge, ipcRenderer } from "electron"
 import { electronAPI } from "@electron-toolkit/preload"
-import type { RedisAPI } from "../shared/connection"
 import { IPC_CHANNELS } from "../shared/channels"
+import { RedisAPI } from "../shared/api"
 
 // Custom APIs for renderer
 const api = {}
 const redisAPI: RedisAPI = {
   connect: (connection) => ipcRenderer.invoke(IPC_CHANNELS.redisConnect, connection),
-  disconnect: () => ipcRenderer.invoke(IPC_CHANNELS.redisDisconnect)
+  disconnect: () => ipcRenderer.invoke(IPC_CHANNELS.redisDisconnect),
+  query: (query) => ipcRenderer.invoke(IPC_CHANNELS.redisQuery, query)
 }
 
 function exposeApi(name: string, value: unknown): void {

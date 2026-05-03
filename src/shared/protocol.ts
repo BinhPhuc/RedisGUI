@@ -1,5 +1,11 @@
 export interface RequestProtocol {
-  type: "connect" | "disconnect" | "type"
+  type: "connect" | "disconnect" | "query"
+  payload: any
+}
+
+export interface ResponseProtocol {
+  ok: boolean
+  message: string
   payload: any
 }
 

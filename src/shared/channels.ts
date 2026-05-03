@@ -1,4 +1,5 @@
 export const IPC_CHANNELS = {
   redisConnect: "redis:connect",
-  redisDisconnect: "redis:disconnect"
+  redisDisconnect: "redis:disconnect",
+  redisQuery: "redis:query"
 }
