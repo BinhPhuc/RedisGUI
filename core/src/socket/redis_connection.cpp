@@ -56,6 +56,7 @@ int RedisConnection::make_connection() {
     }
 
     close(m_sockfd);
+    m_sockfd = -1;
   }
 
   freeaddrinfo(res);
